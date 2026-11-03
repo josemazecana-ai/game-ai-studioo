@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>GAME AI STUDIO | Criador 3D</title>
+<style>
+:root{--bg:#080b12;--panel:#111722;--line:#263044;--text:#edf2ff;--muted:#91a0b8;--accent:#8b5cf6;--blue:#2563eb}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font:14px Inter,Arial,sans-serif}
+header{height:58px;display:flex;align-items:center;justify-content:space-between;padding:0 16px;border-bottom:1px solid var(--line);background:#0d111a;position:sticky;top:0;z-index:3}
+.logo{font-weight:900;letter-spacing:.6px}.logo span{color:#a78bfa}.tag{font-size:11px;background:#132c26;color:#86efac;padding:6px 9px;border-radius:20px}
+main{display:grid;grid-template-columns:270px 1fr 250px;min-height:calc(100vh - 58px)}
+aside,.right{background:var(--panel);padding:15px;border-right:1px solid var(--line)}.right{border-right:0;border-left:1px solid var(--line)}
+h3{font-size:13px;margin:0 0 12px}label{display:block;font-size:11px;color:var(--muted);margin:12px 0 6px}
+input,textarea,select{width:100%;background:#080c13;border:1px solid #30394b;border-radius:8px;padding:10px;color:#fff;font:inherit}
+textarea{min-height:100px;resize:vertical}
+button{border:0;border-radius:8px;padding:10px 12px;font-weight:700;cursor:pointer}
+.primary{background:linear-gradient(90deg,#7c3aed,#2563eb);color:#fff;width:100%;margin-top:10px}
+.secondary{background:#252e40;color:#e8edfa;width:100%;margin-top:8px}
+.workspace{padding:14px;min-width:0}.toolbar{display:flex;justify-content:space-between;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:10px}
+#viewport{height:62vh;min-height:330px;border:1px solid var(--line);border-radius:12px;overflow:hidden;position:relative;background:#182235}#viewport canvas{width:100%;height:100%;display:block}
+.overlay{position:absolute;bottom:10px;left:10px;background:#070b12cc;padding:7px 9px;border-radius:7px;font-size:11px;color:#cbd5e1;pointer-events:none}
+.tiles{display:grid;grid-template-columns:repeat(3,1fr);gap:9px;margin-top:10px}.tile{background:var(--panel);border:1px solid var(--line);border-radius:9px;padding:11px}.tile strong{display:block;font-size:12px}.tile small{color:var(--muted);font-size:11px}
+.list button{display:flex;justify-content:space-between;width:100%;text-align:left;margin:5px 0;background:#1b2433;color:#dbe5f8;font-size:12px}
+#status{font-size:11px;color:#a7f3d0;margin-top:9px;min-height:25px;line-height:1.4}.projectitem{font-size:12px;padding:8px;background:#1a2230;border-radius:7px;margin:5px 0;overflow-wrap:anywhere}
+@media(max-width:900px){main{grid-template-columns:1fr}.right{border-left:0;border-top:1px solid var(--line)}aside{border-right:0;border-bottom:1px solid var(--line)}#viewport{height:50vh}.tiles{grid-template-columns:1fr 1fr}}
+</style></head>
+<body>
+<header><div class="logo">🎮 GAME <span>AI STUDIO</span></div><div class="tag">● EDITOR 3D • BETA</div></header>
+<main>
+<aside>
+<h3>✨ Criar com IA</h3>
+<label>Nome do projeto</label><input id="name" value="Cidade de Luanda 3D">
+<label>Género</label><select id="type"><option>Mundo aberto</option><option>Battle Royale</option><option>Corrida</option><option>Plataforma / Obby</option><option>Aventura</option><option>Simulador</option></select>
+<label>Ideia do jogo</label><textarea id="prompt">Uma cidade africana 3D com estradas, casas, árvores, carros e um personagem explorável.</textarea>
+<button class="primary" id="generate">✨ Gerar cenário com IA</button>
+<button class="secondary" id="save">💾 Guardar projeto</button>
+<button class="secondary" id="export">⬇ Exportar projeto JSON</button>
+<div id="status">Pronto. Podes começar.</div>
+<label>Projetos guardados neste navegador</label><div id="saved"></div>
+</aside>
+<section class="workspace">
+<div class="toolbar"><div><strong id="title">Cidade de Luanda 3D</strong><br><small style="color:#91a0b8">Pré-visualização interativa</small></div><div><button class="secondary" style="width:auto;margin:0" id="play">▶ Testar</button> <button class="secondary" style="width:auto;margin:0" id="reset">↻ Reset</button></div></div>
+<div id="viewport"><div class="overlay">Arrasta para rodar • roda/dedo para zoom</div></div>
+<div class="tiles"><div class="tile"><strong>🌍 Cena 3D</strong><small>Explora o cenário</small></div><div class="tile"><strong>🧍 Personagem</strong><small>Modelo de demonstração</small></div><div class="tile"><strong>🧱 Objetos</strong><small>Casas, árvores e blocos</small></div></div>
+</section>
+<aside class="right">
+<h3>🧰 Ferramentas</h3><div class="list">
+<button id="addhouse">🏠 Adicionar casa <span>+</span></button>
+<button id="addtree">🌳 Adicionar árvore <span>+</span></button>
+<button id="addbox">🧱 Adicionar bloco <span>+</span></button>
+<button id="addplayer">🧍 Adicionar personagem <span>+</span></button>
+</div>
+<label>Estado do projeto</label><div class="projectitem" id="meta">Cena 3D • pronta para edição</div>
+<label>Sobre esta versão</label><small style="color:#91a0b8;line-height:1.6">Esta versão é um editor de protótipo. A IA real precisa de chave API e servidor. O cenário usa objetos 3D básicos, não assets completos de jogos comerciais.</small>
+</aside>
+</main>
+<script type="importmap">
+{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js"}}
+</script>
+<script type="module">
+import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js';
+import {OrbitControls} from 'https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/controls/OrbitControls.js';
+const host=document.querySelector('#viewport'),scene=new THREE.Scene();scene.background=new THREE.Color(0x9cccf6);scene.fog=new THREE.Fog(0x9cccf6,70,180);
+const camera=new THREE.PerspectiveCamera(60,host.clientWidth/host.clientHeight,.1,500);camera.position.set(24,22,30);
+const renderer=new THREE.WebGLRenderer({antialias:true});renderer.setPixelRatio(Math.min(devicePixelRatio,2));renderer.setSize(host.clientWidth,host.clientHeight);renderer.shadowMap.enabled=true;host.appendChild(renderer.domElement);
+const controls=new OrbitControls(camera,renderer.domElement);controls.target.set(0,1,0);controls.enableDamping=true;
+scene.add(new THREE.HemisphereLight(0xffffff,0x526070,2));const sun=new THREE.DirectionalLight(0xffffff,2.2);sun.position.set(20,35,15);sun.castShadow=true;scene.add(sun);
+const group=new THREE.Group();scene.add(group);let objects=0,playing=false;
+const mat=c=>new THREE.MeshStandardMaterial({color:c,roughness:.85});
+function mesh(geo,color,x,y,z){const m=new THREE.Mesh(geo,mat(color));m.position.set(x,y,z);m.castShadow=true;m.receiveShadow=true;group.add(m);objects++;return m}
+function box(x,y,z,w,h,d,c){return mesh(new THREE.BoxGeometry(w,h,d),c,x,y,z)}
+function tree(x=rand(),z=rand()){mesh(new THREE.CylinderGeometry(.25,.35,2,8),0x795334,x,1,z);mesh(new THREE.ConeGeometry(1.5,3,8),0x208b49,x,3,z)}
+function rand(){return Math.random()*60-30}
+function house(x=rand(),z=rand()){box(x,1.5,z,5,3,5,0xe9b879);let r=mesh(new THREE.ConeGeometry(4,2.5,4),0x8a3c32,x,4,z);r.rotation.y=Math.PI/4;box(x,1,z+2.55,1,2,.15,0x523629)}
+function player(x=0,z=0){mesh(new THREE.CapsuleGeometry(.5,1.1,4,8),0x2563eb,x,1.3,z);mesh(new THREE.SphereGeometry(.4,16,12),0xffc99a,x,2.3,z)}
+function clear(){while(group.children.length){let o=group.children[0];group.remove(o);o.geometry?.dispose();o.material?.dispose()}objects=0}
+function base(desc,type){clear();let g=mesh(new THREE.PlaneGeometry(160,160),0x55a85b,0,0,0);g.rotation.x=-Math.PI/2;objects--;
+if(type==="Corrida"||/estrada|corrida|road/i.test(desc)){box(0,.05,0,12,.1,120,0x303744);for(let z=-55;z<60;z+=8)box(0,.12,z,.2,.02,4,0xffffff)}
+if(type==="Plataforma / Obby"){for(let i=0;i<12;i++)box(i%4*5-8,1+i*.5,Math.floor(i/4)*7-8,3,.5,3,[0xff5555,0xffd166,0x55ddaa,0x6688ff][i%4])}
+else {for(let i=0;i<8;i++)house((i%4)*13-20,Math.floor(i/4)*16-8);for(let i=0;i<20;i++)tree(rand(),rand())}
+player();for(let i=0;i<12;i++)box(rand(),.5,rand(),1,1,1,0x8b5cf6);camera.position.set(24,22,30);controls.target.set(0,1,0);controls.update();document.querySelector('#meta').textContent=`Cena gerada • ${objects} objetos`;
+}
+base('cidade','Mundo aberto');
+function resize(){camera.aspect=host.clientWidth/host.clientHeight;camera.updateProjectionMatrix();renderer.setSize(host.clientWidth,host.clientHeight)}window.addEventListener('resize',resize);
+function loop(){requestAnimationFrame(loop);controls.update();renderer.render(scene,camera)}loop();
+function project(){return {name:document.querySelector('#name').value,type:document.querySelector('#type').value,prompt:document.querySelector('#prompt').value,objects,updated:new Date().toISOString()}}
+document.querySelector('#generate').onclick=async()=>{const p=project(),status=document.querySelector('#status');document.querySelector('#title').textContent=p.name;status.textContent='A pedir ideias à IA...';try{const r=await fetch('/api/generate',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(p)});if(!r.ok)throw Error((await r.json()).error||'IA indisponível');const data=await r.json();base(data.description||p.prompt,p.type);status.textContent='IA: '+data.summary+' • Cenário visual de protótipo.'}catch(e){base(p.prompt,p.type);status.textContent='Demo 3D criada. Para IA real, configura o backend/API. '+e.message}};
+document.querySelector('#save').onclick=()=>{const p=project();let arr=JSON.parse(localStorage.getItem('gais_projects')||'[]');arr.unshift(p);localStorage.setItem('gais_projects',JSON.stringify(arr.slice(0,20)));showSaved();document.querySelector('#status').textContent='Projeto guardado neste navegador.'};
+function showSaved(){const arr=JSON.parse(localStorage.getItem('gais_projects')||'[]');document.querySelector('#saved').innerHTML=arr.map((p,i)=>`<div class="projectitem">${i+1}. ${p.name||'Projeto'} <button style="float:right;padding:3px 6px" data-i="${i}">Abrir</button></div>`).join('');document.querySelectorAll('[data-i]').forEach(b=>b.onclick=()=>{const p=arr[+b.dataset.i];document.querySelector('#name').value=p.name;document.querySelector('#type').value=p.type;document.querySelector('#prompt').value=p.prompt;base(p.prompt,p.type);document.querySelector('#title').textContent=p.name;});}
+showSaved();
+document.querySelector('#export').onclick=()=>{const blob=new Blob([JSON.stringify(project(),null,2)],{type:'application/json'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='game-project.json';a.click();URL.revokeObjectURL(a.href)};
+document.querySelector('#reset').onclick=()=>base('cidade','Mundo aberto');
+document.querySelector('#play').onclick=()=>{playing=!playing;document.querySelector('#play').textContent=playing?'⏸ Pausar':'▶ Testar';document.querySelector('#status').textContent=playing?'Modo teste (preview) ativado.':'Modo teste pausado.'};
+document.querySelector('#addhouse').onclick=()=>house(0,0);document.querySelector('#addtree').onclick=()=>tree(0,0);document.querySelector('#addbox').onclick=()=>box(0,1,0,2,2,2,0xf59e0b);document.querySelector('#addplayer').onclick=()=>player(3,3);
+</script></body></html>
